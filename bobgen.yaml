@@ -1,0 +1,30 @@
+psql:
+  dsn: "postgres://postgres:1234@localhost:5432/horsy?sslmode=disable"
+  driver: "github.com/jackc/pgx/v5/stdlib"
+  schemas:
+    - "app"
+  uuid_pkg: "google"
+  queries:
+    - ./internal/repository
+
+plugins:
+  dbinfo:
+    disabled: true
+  enums:
+    disabled: true
+  models:
+    disabled: false
+    pkgname: "schema"
+    destination: "./internal/gen/schema"
+  factory:
+    disabled: true
+  dberrors:
+    disabled: false
+    pkgname: "dberrors"
+    destination: "./internal/gen/dberrors"
+  where:
+    disabled: true
+  loaders:
+    disabled: true
+  joins:
+    disabled: true
