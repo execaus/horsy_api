@@ -37,3 +37,7 @@ Thumbs.db
 config/config*.yaml
 
 .env
+
+./Dockerfile
+
+./publish.sh

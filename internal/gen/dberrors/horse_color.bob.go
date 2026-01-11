@@ -4,14 +4,14 @@
 package dberrors
 
 var HorseColorErrors = &horseColorErrors{
-	ErrUniqueHorseColorPk: &UniqueConstraintError{
+	ErrUniquePkHorseColor: &UniqueConstraintError{
 		schema:  "",
 		table:   "horse_color",
 		columns: []string{"horse", "color"},
-		s:       "horse_color_pk",
+		s:       "pk_horse_color",
 	},
 }
 
 type horseColorErrors struct {
-	ErrUniqueHorseColorPk *UniqueConstraintError
+	ErrUniquePkHorseColor *UniqueConstraintError
 }

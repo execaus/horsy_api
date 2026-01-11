@@ -22,12 +22,10 @@ import (
 
 // HorseBreed is an object representing the database table.
 type HorseBreed struct {
-	// Уникальный идентификатор записи
-	ID uuid.UUID `db:"id,pk" `
 	// Идентификатор лошади
-	Horse uuid.UUID `db:"horse" `
+	Horse uuid.UUID `db:"horse,pk" `
 	// Идентификатор породы
-	Breed uuid.UUID `db:"breed" `
+	Breed uuid.UUID `db:"breed,pk" `
 	// Процент принадлежности к породе, целое число от 0 до 10000, где 10000 = 100%
 	Percent int32 `db:"percent" `
 
@@ -53,10 +51,9 @@ type horseBreedR struct {
 func buildHorseBreedColumns(alias string) horseBreedColumns {
 	return horseBreedColumns{
 		ColumnsExpr: expr.NewColumnsExpr(
-			"id", "horse", "breed", "percent",
+			"horse", "breed", "percent",
 		).WithParent("horse_breed"),
 		tableAlias: alias,
-		ID:         psql.Quote(alias, "id"),
 		Horse:      psql.Quote(alias, "horse"),
 		Breed:      psql.Quote(alias, "breed"),
 		Percent:    psql.Quote(alias, "percent"),
@@ -66,7 +63,6 @@ func buildHorseBreedColumns(alias string) horseBreedColumns {
 type horseBreedColumns struct {
 	expr.ColumnsExpr
 	tableAlias string
-	ID         psql.Expression
 	Horse      psql.Expression
 	Breed      psql.Expression
 	Percent    psql.Expression
@@ -84,17 +80,13 @@ func (horseBreedColumns) AliasedAs(alias string) horseBreedColumns {
 // All values are optional, and do not have to be set
 // Generated columns are not included
 type HorseBreedSetter struct {
-	ID      omit.Val[uuid.UUID] `db:"id,pk" `
-	Horse   omit.Val[uuid.UUID] `db:"horse" `
-	Breed   omit.Val[uuid.UUID] `db:"breed" `
+	Horse   omit.Val[uuid.UUID] `db:"horse,pk" `
+	Breed   omit.Val[uuid.UUID] `db:"breed,pk" `
 	Percent omit.Val[int32]     `db:"percent" `
 }
 
 func (s HorseBreedSetter) SetColumns() []string {
-	vals := make([]string, 0, 4)
-	if s.ID.IsValue() {
-		vals = append(vals, "id")
-	}
+	vals := make([]string, 0, 3)
 	if s.Horse.IsValue() {
 		vals = append(vals, "horse")
 	}
@@ -108,9 +100,6 @@ func (s HorseBreedSetter) SetColumns() []string {
 }
 
 func (s HorseBreedSetter) Overwrite(t *HorseBreed) {
-	if s.ID.IsValue() {
-		t.ID = s.ID.MustGet()
-	}
 	if s.Horse.IsValue() {
 		t.Horse = s.Horse.MustGet()
 	}
@@ -128,29 +117,23 @@ func (s *HorseBreedSetter) Apply(q *dialect.InsertQuery) {
 	})
 
 	q.AppendValues(bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
-		vals := make([]bob.Expression, 4)
-		if s.ID.IsValue() {
-			vals[0] = psql.Arg(s.ID.MustGet())
+		vals := make([]bob.Expression, 3)
+		if s.Horse.IsValue() {
+			vals[0] = psql.Arg(s.Horse.MustGet())
 		} else {
 			vals[0] = psql.Raw("DEFAULT")
 		}
 
-		if s.Horse.IsValue() {
-			vals[1] = psql.Arg(s.Horse.MustGet())
+		if s.Breed.IsValue() {
+			vals[1] = psql.Arg(s.Breed.MustGet())
 		} else {
 			vals[1] = psql.Raw("DEFAULT")
 		}
 
-		if s.Breed.IsValue() {
-			vals[2] = psql.Arg(s.Breed.MustGet())
+		if s.Percent.IsValue() {
+			vals[2] = psql.Arg(s.Percent.MustGet())
 		} else {
 			vals[2] = psql.Raw("DEFAULT")
-		}
-
-		if s.Percent.IsValue() {
-			vals[3] = psql.Arg(s.Percent.MustGet())
-		} else {
-			vals[3] = psql.Raw("DEFAULT")
 		}
 
 		return bob.ExpressSlice(ctx, w, d, start, vals, "", ", ", "")
@@ -162,14 +145,7 @@ func (s HorseBreedSetter) UpdateMod() bob.Mod[*dialect.UpdateQuery] {
 }
 
 func (s HorseBreedSetter) Expressions(prefix ...string) []bob.Expression {
-	exprs := make([]bob.Expression, 0, 4)
-
-	if s.ID.IsValue() {
-		exprs = append(exprs, expr.Join{Sep: " = ", Exprs: []bob.Expression{
-			psql.Quote(append(prefix, "id")...),
-			psql.Arg(s.ID),
-		}})
-	}
+	exprs := make([]bob.Expression, 0, 3)
 
 	if s.Horse.IsValue() {
 		exprs = append(exprs, expr.Join{Sep: " = ", Exprs: []bob.Expression{
@@ -197,23 +173,26 @@ func (s HorseBreedSetter) Expressions(prefix ...string) []bob.Expression {
 
 // FindHorseBreed retrieves a single record by primary key
 // If cols is empty Find will return all columns.
-func FindHorseBreed(ctx context.Context, exec bob.Executor, IDPK uuid.UUID, cols ...string) (*HorseBreed, error) {
+func FindHorseBreed(ctx context.Context, exec bob.Executor, HorsePK uuid.UUID, BreedPK uuid.UUID, cols ...string) (*HorseBreed, error) {
 	if len(cols) == 0 {
 		return HorseBreeds.Query(
-			sm.Where(HorseBreeds.Columns.ID.EQ(psql.Arg(IDPK))),
+			sm.Where(HorseBreeds.Columns.Horse.EQ(psql.Arg(HorsePK))),
+			sm.Where(HorseBreeds.Columns.Breed.EQ(psql.Arg(BreedPK))),
 		).One(ctx, exec)
 	}
 
 	return HorseBreeds.Query(
-		sm.Where(HorseBreeds.Columns.ID.EQ(psql.Arg(IDPK))),
+		sm.Where(HorseBreeds.Columns.Horse.EQ(psql.Arg(HorsePK))),
+		sm.Where(HorseBreeds.Columns.Breed.EQ(psql.Arg(BreedPK))),
 		sm.Columns(HorseBreeds.Columns.Only(cols...)),
 	).One(ctx, exec)
 }
 
 // HorseBreedExists checks the presence of a single record by primary key
-func HorseBreedExists(ctx context.Context, exec bob.Executor, IDPK uuid.UUID) (bool, error) {
+func HorseBreedExists(ctx context.Context, exec bob.Executor, HorsePK uuid.UUID, BreedPK uuid.UUID) (bool, error) {
 	return HorseBreeds.Query(
-		sm.Where(HorseBreeds.Columns.ID.EQ(psql.Arg(IDPK))),
+		sm.Where(HorseBreeds.Columns.Horse.EQ(psql.Arg(HorsePK))),
+		sm.Where(HorseBreeds.Columns.Breed.EQ(psql.Arg(BreedPK))),
 	).Exists(ctx, exec)
 }
 
@@ -237,11 +216,14 @@ func (o *HorseBreed) AfterQueryHook(ctx context.Context, exec bob.Executor, quer
 
 // primaryKeyVals returns the primary key values of the HorseBreed
 func (o *HorseBreed) primaryKeyVals() bob.Expression {
-	return psql.Arg(o.ID)
+	return psql.ArgGroup(
+		o.Horse,
+		o.Breed,
+	)
 }
 
 func (o *HorseBreed) pkEQ() dialect.Expression {
-	return psql.Quote("horse_breed", "id").EQ(bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+	return psql.Group(psql.Quote("horse_breed", "horse"), psql.Quote("horse_breed", "breed")).EQ(bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 		return o.primaryKeyVals().WriteSQL(ctx, w, d, start)
 	}))
 }
@@ -268,7 +250,8 @@ func (o *HorseBreed) Delete(ctx context.Context, exec bob.Executor) error {
 // Reload refreshes the HorseBreed using the executor
 func (o *HorseBreed) Reload(ctx context.Context, exec bob.Executor) error {
 	o2, err := HorseBreeds.Query(
-		sm.Where(HorseBreeds.Columns.ID.EQ(psql.Arg(o.ID))),
+		sm.Where(HorseBreeds.Columns.Horse.EQ(psql.Arg(o.Horse))),
+		sm.Where(HorseBreeds.Columns.Breed.EQ(psql.Arg(o.Breed))),
 	).One(ctx, exec)
 	if err != nil {
 		return err
@@ -302,7 +285,7 @@ func (o HorseBreedSlice) pkIN() dialect.Expression {
 		return psql.Raw("NULL")
 	}
 
-	return psql.Quote("horse_breed", "id").In(bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+	return psql.Group(psql.Quote("horse_breed", "horse"), psql.Quote("horse_breed", "breed")).In(bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 		pkPairs := make([]bob.Expression, len(o))
 		for i, row := range o {
 			pkPairs[i] = row.primaryKeyVals()
@@ -317,7 +300,10 @@ func (o HorseBreedSlice) pkIN() dialect.Expression {
 func (o HorseBreedSlice) copyMatchingRows(from ...*HorseBreed) {
 	for i, old := range o {
 		for _, new := range from {
-			if new.ID != old.ID {
+			if new.Horse != old.Horse {
+				continue
+			}
+			if new.Breed != old.Breed {
 				continue
 			}
 			new.R = old.R

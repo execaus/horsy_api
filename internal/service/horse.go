@@ -93,7 +93,6 @@ func (s *HorseService) Create(ctx context.Context, params CreateHorseParams) (*m
 
 	for _, breed := range params.Breeds {
 		_, err = schema.HorseBreeds.Insert(&schema.HorseBreedSetter{
-			ID:      omit.From(uuid.New()),
 			Horse:   omit.From(dbHorse.ID),
 			Breed:   omit.From(breed.ID),
 			Percent: omit.From(breed.Percent),

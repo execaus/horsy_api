@@ -4,23 +4,14 @@
 package dberrors
 
 var HorseBreedErrors = &horseBreedErrors{
-	ErrUniqueHorseBreedPkey: &UniqueConstraintError{
-		schema:  "",
-		table:   "horse_breed",
-		columns: []string{"id"},
-		s:       "horse_breed_pkey",
-	},
-
-	ErrUniqueUqHorseBreeds: &UniqueConstraintError{
+	ErrUniquePkHorseBreed: &UniqueConstraintError{
 		schema:  "",
 		table:   "horse_breed",
 		columns: []string{"horse", "breed"},
-		s:       "uq_horse_breeds",
+		s:       "pk_horse_breed",
 	},
 }
 
 type horseBreedErrors struct {
-	ErrUniqueHorseBreedPkey *UniqueConstraintError
-
-	ErrUniqueUqHorseBreeds *UniqueConstraintError
+	ErrUniquePkHorseBreed *UniqueConstraintError
 }

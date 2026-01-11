@@ -4,14 +4,14 @@
 package dberrors
 
 var HorseGeneticMarkerErrors = &horseGeneticMarkerErrors{
-	ErrUniqueHorseGeneticMarkerPk: &UniqueConstraintError{
+	ErrUniquePkHorseGeneticMarker: &UniqueConstraintError{
 		schema:  "",
 		table:   "horse_genetic_marker",
 		columns: []string{"horse", "marker"},
-		s:       "horse_genetic_marker_pk",
+		s:       "pk_horse_genetic_marker",
 	},
 }
 
 type horseGeneticMarkerErrors struct {
-	ErrUniqueHorseGeneticMarkerPk *UniqueConstraintError
+	ErrUniquePkHorseGeneticMarker *UniqueConstraintError
 }

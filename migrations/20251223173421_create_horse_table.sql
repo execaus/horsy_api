@@ -65,7 +65,6 @@ create table if not exists app.horse_genetic_marker(
 );
 comment on table app.horse_genetic_marker is 'Таблица для хранения генетических маркеров лошадей';
 
-comment on column app.horse_genetic_marker.id is 'Уникальный идентификатор записи';
 comment on column app.horse_genetic_marker.horse is 'Идентификатор лошади';
 comment on column app.horse_genetic_marker.marker is 'Идентификатор генетического маркера';
 
@@ -73,16 +72,14 @@ alter table app.horse_genetic_marker add constraint fk_horse_genetic_marker_hors
 alter table app.horse_genetic_marker add constraint fk_horse_genetic_marker_marker foreign key (marker) references app.genetic_markers(id);
 
 create table if not exists app.horse_breed(
-    id uuid primary key default gen_random_uuid(),
     horse uuid not null,
     breed uuid not null,
     percent int not null,
-    constraint uq_horse_breeds unique (horse, breed),
+    constraint pk_horse_breed primary key (horse, breed),
     constraint ck_breed_percent check (percent >= 0 and percent <= 10000)
 );
 comment on table app.horse_breed is 'Таблица для хранения породной принадлежности лошадей с указанием процента';
 
-comment on column app.horse_breed.id is 'Уникальный идентификатор записи';
 comment on column app.horse_breed.horse is 'Идентификатор лошади';
 comment on column app.horse_breed.breed is 'Идентификатор породы';
 comment on column app.horse_breed.percent is 'Процент принадлежности к породе, целое число от 0 до 10000, где 10000 = 100%';
