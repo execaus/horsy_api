@@ -47,7 +47,7 @@ Horsy Team
 		body,
 	))
 
-	fmt.Println(string(msg))
+	zap.L().Info(string(msg))
 	return nil
 
 	addr := fmt.Sprintf("%s:%d", s.cfg.Host, s.cfg.Port)
